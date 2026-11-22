@@ -46,4 +46,21 @@ describe("<DailySession />", () => {
 
     expect(await screen.findByText("Fini pour aujourd'hui")).toBeDefined();
   });
+
+  it("augmente la série en haut de l'écran quand la séance du jour est faite", async () => {
+    vi.setSystemTime(new Date(2026, 11, 1, 9));
+    const { DailySession } = await loadApp();
+
+    render(<DailySession />);
+    expect(await screen.findByLabelText("Série : 0 jour")).toBeDefined();
+
+    click("Réviser");
+    await screen.findByRole("button", { name: "Retourner la carte" });
+    while (screen.queryByRole("button", { name: "Retourner la carte" })) {
+      click("Retourner la carte");
+      click("Je sais");
+    }
+
+    expect(await screen.findByLabelText("Série : 1 jour")).toBeDefined();
+  });
 });

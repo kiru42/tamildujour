@@ -25,12 +25,17 @@ function makeWord(id: string): Word {
   };
 }
 
-function fakeProgressRepository(initial: Progress = { words: [] }) {
-  let stored = structuredClone(initial);
+function progressOf({ words }: Pick<Progress, "words">): Progress {
+  return { words, completedDays: [] };
+}
+
+function fakeProgressRepository(initial: Pick<Progress, "words"> = { words: [] }) {
+  let stored = progressOf(structuredClone(initial));
   const repository: ProgressRepository = {
     load: async () => structuredClone(stored),
-    save: async (progress) => {
-      stored = structuredClone(progress);
+    update: async (change) => {
+      stored = structuredClone(change(structuredClone(stored)));
+      return structuredClone(stored);
     },
   };
   return { repository, stored: () => stored };
@@ -58,7 +63,7 @@ describe("toDayKey", () => {
 
 describe("buildReviewQueue", () => {
   it("ne contient que les mots déjà vus", () => {
-    const progress: Progress = { words: [seen("c", "new"), seen("a", "new")] };
+    const progress = progressOf({ words: [seen("c", "new"), seen("a", "new")] });
 
     const queue = buildReviewQueue(words, progress);
 
@@ -66,18 +71,18 @@ describe("buildReviewQueue", () => {
   });
 
   it("est vide si aucun mot n'a été vu", () => {
-    expect(buildReviewQueue(words, { words: [] })).toEqual([]);
+    expect(buildReviewQueue(words, progressOf({ words: [] }))).toEqual([]);
   });
 
   it("met les mots « à revoir » avant les mots sus", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: [
         seen("a", "known", "2026-11-10"),
         seen("b", "toReview", "2026-11-20"),
         seen("c", "known", "2026-11-05"),
         seen("d", "toReview", "2026-11-15"),
       ],
-    };
+    });
 
     const queue = buildReviewQueue(words, progress).map((word) => word.id);
 
@@ -86,13 +91,13 @@ describe("buildReviewQueue", () => {
   });
 
   it("place les mots jamais révisés entre les mots « à revoir » et les mots sus", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: [
         seen("a", "known", "2026-11-10"),
         seen("b", "new"),
         seen("c", "toReview", "2026-11-10"),
       ],
-    };
+    });
 
     const queue = buildReviewQueue(words, progress).map((word) => word.id);
 
@@ -100,13 +105,13 @@ describe("buildReviewQueue", () => {
   });
 
   it("dans un même groupe, montre d'abord le mot révisé il y a le plus longtemps", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: [
         seen("a", "known", "2026-11-20"),
         seen("b", "known", "2026-11-02"),
         seen("c", "known", "2026-11-11"),
       ],
-    };
+    });
 
     const queue = buildReviewQueue(words, progress).map((word) => word.id);
 
@@ -114,21 +119,21 @@ describe("buildReviewQueue", () => {
   });
 
   it("fait au plus 5 cartes", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: words.map((word) => seen(word.id, "new")),
-    };
+    });
 
     expect(REVIEW_SESSION_SIZE).toBe(5);
     expect(buildReviewQueue(words, progress)).toHaveLength(5);
   });
 
   it("garde les mots « à revoir » quand il faut couper à 5 cartes", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: [
         ...["a", "b", "c", "d", "e"].map((id) => seen(id, "known", "2026-11-01")),
         seen("h", "toReview", "2026-11-21"),
       ],
-    };
+    });
 
     const queue = buildReviewQueue(words, progress).map((word) => word.id);
 
@@ -137,9 +142,9 @@ describe("buildReviewQueue", () => {
   });
 
   it("ignore un mot vu qui n'existe plus dans le fichier des mots", () => {
-    const progress: Progress = {
+    const progress = progressOf({
       words: [seen("disparu", "toReview"), seen("a", "new")],
-    };
+    });
 
     expect(buildReviewQueue(words, progress).map((word) => word.id)).toEqual([
       "a",
@@ -168,22 +173,6 @@ describe("createReviewService", () => {
     await service.recordWordOfTheDay(new Date(2026, 10, 22, 18));
 
     expect(fake.stored().words).toHaveLength(1);
-  });
-
-  it("ne perd aucune écriture lors d'appels simultanés", async () => {
-    const fake = fakeProgressRepository({ words: [seen("a", "new")] });
-    const service = createReviewService(wordRepository, fake.repository);
-    const day = new Date(2026, 10, 22, 9);
-
-    await Promise.all([
-      service.recordWordOfTheDay(day),
-      service.answer("a", "known", day),
-    ]);
-
-    expect(fake.stored().words).toEqual([
-      seen("a", "known", "2026-11-22"),
-      seen(wordOfTheDay.getWordOfTheDay(day).id, "new", null, "2026-11-22"),
-    ]);
   });
 
   it("ne garde pas l'état d'un mot déjà révisé quand il redevient mot du jour", async () => {

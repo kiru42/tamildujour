@@ -65,53 +65,41 @@ export function createReviewService(
 ): ReviewService {
   const wordOfTheDay = createWordOfTheDayService(wordRepository);
 
-  // Les opérations s'exécutent l'une après l'autre : deux lectures-écritures
-  // simultanées (affichage du mot et clic, par ex.) ne s'écrasent pas.
-  let pending: Promise<unknown> = Promise.resolve();
-  function inTurn<T>(operation: () => Promise<T>): Promise<T> {
-    const result = pending.then(operation);
-    pending = result.catch(() => undefined);
-    return result;
-  }
-
   return {
-    recordWordOfTheDay: (date) =>
-      inTurn(async () => {
-        const word = wordOfTheDay.getWordOfTheDay(date);
-        const progress = await progressRepository.load();
-        if (progress.words.some((entry) => entry.wordId === word.id)) return;
-        await progressRepository.save({
-          ...progress,
-          words: [
-            ...progress.words,
-            {
-              wordId: word.id,
-              firstSeenOn: toDayKey(date),
-              status: "new",
-              lastReviewedOn: null,
+    async recordWordOfTheDay(date) {
+      const word = wordOfTheDay.getWordOfTheDay(date);
+      await progressRepository.update((progress) =>
+        progress.words.some((entry) => entry.wordId === word.id)
+          ? progress
+          : {
+              ...progress,
+              words: [
+                ...progress.words,
+                {
+                  wordId: word.id,
+                  firstSeenOn: toDayKey(date),
+                  status: "new",
+                  lastReviewedOn: null,
+                },
+              ],
             },
-          ],
-        });
-      }),
+      );
+    },
 
-    getReviewCards: () =>
-      inTurn(async () => {
-        const progress = await progressRepository.load();
-        return buildReviewQueue(wordRepository.getAll(), progress);
-      }),
+    async getReviewCards() {
+      const progress = await progressRepository.load();
+      return buildReviewQueue(wordRepository.getAll(), progress);
+    },
 
-    answer: (wordId, answer, date) =>
-      inTurn(async () => {
-        const progress = await progressRepository.load();
-        if (!progress.words.some((entry) => entry.wordId === wordId)) return;
-        await progressRepository.save({
-          ...progress,
-          words: progress.words.map((entry) =>
-            entry.wordId === wordId
-              ? { ...entry, status: answer, lastReviewedOn: toDayKey(date) }
-              : entry,
-          ),
-        });
-      }),
+    async answer(wordId, answer, date) {
+      await progressRepository.update((progress) => ({
+        ...progress,
+        words: progress.words.map((entry) =>
+          entry.wordId === wordId
+            ? { ...entry, status: answer, lastReviewedOn: toDayKey(date) }
+            : entry,
+        ),
+      }));
+    },
   };
 }

@@ -39,6 +39,7 @@ const progress: Progress = {
       lastReviewedOn: null,
     },
   ],
+  completedDays: ["2026-11-20", "2026-11-21"],
 };
 
 describe("parseProgress", () => {
@@ -63,7 +64,29 @@ describe("parseProgress", () => {
       ],
     };
 
-    expect(parseProgress(raw)).toEqual({ words: [progress.words[0]] });
+    expect(parseProgress(raw)).toEqual({
+      words: [progress.words[0]],
+      completedDays: [],
+    });
+  });
+
+  it("relit une progression enregistrée avant la série (sans jours de séance)", () => {
+    expect(parseProgress({ words: progress.words })).toEqual({
+      words: progress.words,
+      completedDays: [],
+    });
+  });
+
+  it("écarte les jours de séance mal formés", () => {
+    const raw = {
+      words: [],
+      completedDays: ["2026-11-20", "20/11/2026", 3, null, "2026-11-21"],
+    };
+
+    expect(parseProgress(raw).completedDays).toEqual([
+      "2026-11-20",
+      "2026-11-21",
+    ]);
   });
 });
 
@@ -80,14 +103,80 @@ describe("createLocalStorageProgressRepository", () => {
     const storage = createFakeStorage();
     const repository = createLocalStorageProgressRepository(() => storage);
 
-    await repository.save(progress);
+    await repository.update(() => progress);
+
+    expect(await repository.load()).toEqual(progress);
+  });
+
+  it("passe la progression actuelle au changement et renvoie la nouvelle", async () => {
+    const storage = createFakeStorage();
+    const repository = createLocalStorageProgressRepository(() => storage);
+    await repository.update(() => progress);
+
+    const updated = await repository.update((current) => ({
+      ...current,
+      completedDays: [...current.completedDays, "2026-11-22"],
+    }));
+
+    expect(updated.completedDays).toEqual([
+      "2026-11-20",
+      "2026-11-21",
+      "2026-11-22",
+    ]);
+    expect(await repository.load()).toEqual(updated);
+  });
+
+  it("ne perd aucune écriture lors de changements simultanés", async () => {
+    const storage = createFakeStorage();
+    const repository = createLocalStorageProgressRepository(() => storage);
+
+    await Promise.all([
+      repository.update((current) => ({
+        ...current,
+        words: [...current.words, progress.words[0]],
+      })),
+      repository.update((current) => ({
+        ...current,
+        completedDays: [...current.completedDays, "2026-11-22"],
+      })),
+    ]);
+
+    expect(await repository.load()).toEqual({
+      words: [progress.words[0]],
+      completedDays: ["2026-11-22"],
+    });
+  });
+
+  it("relit après les changements en cours", async () => {
+    const storage = createFakeStorage();
+    const repository = createLocalStorageProgressRepository(() => storage);
+
+    const pending = repository.update(() => progress);
+    const loaded = await repository.load();
+    await pending;
+
+    expect(loaded).toEqual(progress);
+  });
+
+  it("ne bloque pas les changements suivants si un changement échoue", async () => {
+    const storage = createFakeStorage();
+    const repository = createLocalStorageProgressRepository(() => storage);
+
+    await expect(
+      repository.update(() => {
+        throw new Error("oups");
+      }),
+    ).rejects.toThrow("oups");
+    await repository.update(() => progress);
 
     expect(await repository.load()).toEqual(progress);
   });
 
   it("garde la progression après fermeture et rechargement de l'app", async () => {
     const storage = createFakeStorage();
-    await createLocalStorageProgressRepository(() => storage).save(progress);
+    await createLocalStorageProgressRepository(() => storage).update(
+      () => progress,
+    );
 
     // Nouvelle instance sur le même stockage : l'app a été rechargée.
     const reloaded = createLocalStorageProgressRepository(() => storage);
@@ -98,7 +187,9 @@ describe("createLocalStorageProgressRepository", () => {
   it("stocke la progression sous une clé dédiée, en JSON", async () => {
     const storage = createFakeStorage();
 
-    await createLocalStorageProgressRepository(() => storage).save(progress);
+    await createLocalStorageProgressRepository(() => storage).update(
+      () => progress,
+    );
 
     expect(JSON.parse(storage.getItem(PROGRESS_STORAGE_KEY)!)).toEqual(
       progress,
@@ -118,7 +209,7 @@ describe("createLocalStorageProgressRepository", () => {
   it("ne plante pas sans stockage disponible (rendu serveur)", async () => {
     const repository = createLocalStorageProgressRepository(() => undefined);
 
-    await expect(repository.save(progress)).resolves.toBeUndefined();
+    await expect(repository.update(() => progress)).resolves.toEqual(progress);
     expect(await repository.load()).toEqual(EMPTY_PROGRESS);
   });
 });
@@ -128,7 +219,7 @@ describe("createInMemoryProgressRepository", () => {
     const repository = createInMemoryProgressRepository(progress);
     expect(await repository.load()).toEqual(progress);
 
-    await repository.save(EMPTY_PROGRESS);
+    await repository.update(() => EMPTY_PROGRESS);
 
     expect(await repository.load()).toEqual(EMPTY_PROGRESS);
   });

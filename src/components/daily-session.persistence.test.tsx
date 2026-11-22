@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe("<DailySession /> après rechargement", () => {
-  it("garde la progression après rechargement : le mot « à revoir » revient en premier", async () => {
+  it("garde la progression et la série après rechargement", async () => {
     vi.setSystemTime(new Date(2026, 10, 22, 9));
     let app = await loadApp();
     const day1 = app.wordOfTheDayService.getWordOfTheDay(
@@ -53,7 +53,18 @@ describe("<DailySession /> après rechargement", () => {
     click("Réviser");
     await screen.findByRole("button", { name: "Retourner la carte" });
 
+    // Le mot « à revoir » d'hier revient en premier, la série est gardée.
     expect(screen.getByText("Carte 1 sur 2")).toBeDefined();
     expect(screen.getByRole("heading", { name: day1.tamil })).toBeDefined();
+    expect(screen.getByLabelText("Série : 1 jour")).toBeDefined();
+    cleanup();
+
+    // La séance du 23 n'est pas finie ; l'app est rouverte le 24.
+    vi.setSystemTime(new Date(2026, 10, 24, 9));
+    app = await loadApp();
+    render(<app.DailySession />);
+
+    expect(await screen.findByText("Ne rate pas deux fois")).toBeDefined();
+    expect(screen.getByLabelText("Série : 1 jour")).toBeDefined();
   });
 });
