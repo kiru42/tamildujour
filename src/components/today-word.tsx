@@ -7,7 +7,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
-import { reviewService, wordOfTheDayService } from "@/services/container";
+import { dailySessionService, wordOfTheDayService } from "@/services/container";
 
 import { WordOfTheDay } from "./word-of-the-day";
 
@@ -33,9 +33,12 @@ export function TodayWord({ onReview }: TodayWordProps) {
   const word = useSyncExternalStore(subscribe, getTodayWord, getServerWord);
   const wordId = word?.id;
 
-  // Un mot affiché comme mot du jour entre dans la révision.
+  // Un mot affiché comme mot du jour est vu : il entre dans la révision et
+  // compte pour la séance du jour.
   useEffect(() => {
-    if (wordId !== undefined) void reviewService.recordWordOfTheDay(new Date());
+    if (wordId !== undefined) {
+      void dailySessionService.seeWordOfTheDay(new Date());
+    }
   }, [wordId]);
 
   if (word === null) {

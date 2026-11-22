@@ -4,6 +4,7 @@
 import { createLocalStorageProgressRepository } from "@/data/progress.repository";
 import { createJsonWordRepository } from "@/data/words.repository";
 
+import { createDailySessionService } from "./daily-session.service";
 import { createReviewService } from "./review.service";
 import { createStreakService } from "./streak.service";
 import { createWordOfTheDayService } from "./word-of-the-day.service";
@@ -13,10 +14,15 @@ const progressRepository = createLocalStorageProgressRepository();
 
 export const wordOfTheDayService = createWordOfTheDayService(wordRepository);
 
-export const reviewService = createReviewService(
+const reviewService = createReviewService(
   wordRepository,
   progressRepository,
   wordOfTheDayService,
 );
 
 export const streakService = createStreakService(progressRepository);
+
+export const dailySessionService = createDailySessionService(
+  reviewService,
+  streakService,
+);
