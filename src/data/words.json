@@ -1,0 +1,222 @@
+[
+  {
+    "id": "vanakkam",
+    "tamil": "வணக்கம்",
+    "transliteration": "vanakkam",
+    "french": "bonjour",
+    "example": {
+      "tamil": "வணக்கம் அம்மா!",
+      "transliteration": "vanakkam ammaa !",
+      "french": "Bonjour maman !"
+    }
+  },
+  {
+    "id": "ammaa",
+    "tamil": "அம்மா",
+    "transliteration": "ammaa",
+    "french": "maman",
+    "example": {
+      "tamil": "அம்மா வீட்டில் இருக்கிறார்.",
+      "transliteration": "ammaa veettil irukkiraar.",
+      "french": "Maman est à la maison."
+    }
+  },
+  {
+    "id": "appaa",
+    "tamil": "அப்பா",
+    "transliteration": "appaa",
+    "french": "papa",
+    "example": {
+      "tamil": "அப்பா கடைக்குப் போனார்.",
+      "transliteration": "appaa kadaikkup ponaar.",
+      "french": "Papa est allé au magasin."
+    }
+  },
+  {
+    "id": "thanneer",
+    "tamil": "தண்ணீர்",
+    "transliteration": "thanneer",
+    "french": "eau",
+    "example": {
+      "tamil": "எனக்குத் தண்ணீர் வேண்டும்.",
+      "transliteration": "enakkuth thanneer vendum.",
+      "french": "Je veux de l'eau."
+    }
+  },
+  {
+    "id": "paal",
+    "tamil": "பால்",
+    "transliteration": "paal",
+    "french": "lait",
+    "example": {
+      "tamil": "நான் பால் குடிக்கிறேன்.",
+      "transliteration": "naan paal kudikkiren.",
+      "french": "Je bois du lait."
+    }
+  },
+  {
+    "id": "poonai",
+    "tamil": "பூனை",
+    "transliteration": "poonai",
+    "french": "chat",
+    "example": {
+      "tamil": "பூனை தூங்குகிறது.",
+      "transliteration": "poonai thoongukirathu.",
+      "french": "Le chat dort."
+    }
+  },
+  {
+    "id": "naay",
+    "tamil": "நாய்",
+    "transliteration": "naay",
+    "french": "chien",
+    "example": {
+      "tamil": "நாய் ஓடுகிறது.",
+      "transliteration": "naay odukirathu.",
+      "french": "Le chien court."
+    }
+  },
+  {
+    "id": "veedu",
+    "tamil": "வீடு",
+    "transliteration": "veedu",
+    "french": "maison",
+    "example": {
+      "tamil": "இது என் வீடு.",
+      "transliteration": "ithu en veedu.",
+      "french": "C'est ma maison."
+    }
+  },
+  {
+    "id": "pazham",
+    "tamil": "பழம்",
+    "transliteration": "pazham",
+    "french": "fruit",
+    "example": {
+      "tamil": "இந்தப் பழம் இனிப்பாக இருக்கிறது.",
+      "transliteration": "inthap pazham inippaaga irukkirathu.",
+      "french": "Ce fruit est sucré."
+    }
+  },
+  {
+    "id": "maampazham",
+    "tamil": "மாம்பழம்",
+    "transliteration": "maampazham",
+    "french": "mangue",
+    "example": {
+      "tamil": "எனக்கு மாம்பழம் பிடிக்கும்.",
+      "transliteration": "enakku maampazham pidikkum.",
+      "french": "J'aime la mangue."
+    }
+  },
+  {
+    "id": "sooriyan",
+    "tamil": "சூரியன்",
+    "transliteration": "sooriyan",
+    "french": "soleil",
+    "example": {
+      "tamil": "சூரியன் பிரகாசிக்கிறது.",
+      "transliteration": "sooriyan pirakaasikkirathu.",
+      "french": "Le soleil brille."
+    }
+  },
+  {
+    "id": "nilaa",
+    "tamil": "நிலா",
+    "transliteration": "nilaa",
+    "french": "lune",
+    "example": {
+      "tamil": "வானத்தில் நிலா இருக்கிறது.",
+      "transliteration": "vaanaththil nilaa irukkirathu.",
+      "french": "La lune est dans le ciel."
+    }
+  },
+  {
+    "id": "maram",
+    "tamil": "மரம்",
+    "transliteration": "maram",
+    "french": "arbre",
+    "example": {
+      "tamil": "இந்த மரம் பெரியது.",
+      "transliteration": "intha maram periyathu.",
+      "french": "Cet arbre est grand."
+    }
+  },
+  {
+    "id": "poo",
+    "tamil": "பூ",
+    "transliteration": "poo",
+    "french": "fleur",
+    "example": {
+      "tamil": "இந்தப் பூ அழகாக இருக்கிறது.",
+      "transliteration": "inthap poo azhagaaga irukkirathu.",
+      "french": "Cette fleur est belle."
+    }
+  },
+  {
+    "id": "puththagam",
+    "tamil": "புத்தகம்",
+    "transliteration": "puththagam",
+    "french": "livre",
+    "example": {
+      "tamil": "நான் புத்தகம் படிக்கிறேன்.",
+      "transliteration": "naan puththagam padikkiren.",
+      "french": "Je lis un livre."
+    }
+  },
+  {
+    "id": "nandri",
+    "tamil": "நன்றி",
+    "transliteration": "nandri",
+    "french": "merci",
+    "example": {
+      "tamil": "நன்றி பாட்டி!",
+      "transliteration": "nandri paatti !",
+      "french": "Merci mamie !"
+    }
+  },
+  {
+    "id": "saappaadu",
+    "tamil": "சாப்பாடு",
+    "transliteration": "saappaadu",
+    "french": "repas",
+    "example": {
+      "tamil": "சாப்பாடு தயார்.",
+      "transliteration": "saappaadu thayaar.",
+      "french": "Le repas est prêt."
+    }
+  },
+  {
+    "id": "palli",
+    "tamil": "பள்ளி",
+    "transliteration": "palli",
+    "french": "école",
+    "example": {
+      "tamil": "நான் பள்ளிக்குப் போகிறேன்.",
+      "transliteration": "naan pallikkup pogiren.",
+      "french": "Je vais à l'école."
+    }
+  },
+  {
+    "id": "sivappu",
+    "tamil": "சிவப்பு",
+    "transliteration": "sivappu",
+    "french": "rouge",
+    "example": {
+      "tamil": "ஆப்பிள் சிவப்பாக இருக்கிறது.",
+      "transliteration": "aappil sivappaaga irukkirathu.",
+      "french": "La pomme est rouge."
+    }
+  },
+  {
+    "id": "ondru",
+    "tamil": "ஒன்று",
+    "transliteration": "ondru",
+    "french": "un",
+    "example": {
+      "tamil": "ஒன்று, இரண்டு, மூன்று!",
+      "transliteration": "ondru, irandu, moondru !",
+      "french": "Un, deux, trois !"
+    }
+  }
+]
