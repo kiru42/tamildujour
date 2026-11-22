@@ -2,7 +2,6 @@
 // (« à revoir » d'abord, puis jamais révisés, puis sus) et note les réponses.
 
 import type {
-  DayKey,
   Progress,
   ProgressRepository,
   WordProgress,
@@ -10,7 +9,8 @@ import type {
 } from "@/data/progress.repository";
 import type { Word, WordRepository } from "@/data/words.repository";
 
-import { createWordOfTheDayService } from "./word-of-the-day.service";
+import { toDayKey } from "./day";
+import type { WordOfTheDayService } from "./word-of-the-day.service";
 
 export type { Example, Word } from "@/data/words.repository";
 
@@ -23,12 +23,6 @@ export type ReviewService = {
   getReviewCards(): Promise<Word[]>;
   answer(wordId: string, answer: ReviewAnswer, date: Date): Promise<void>;
 };
-
-export function toDayKey(date: Date): DayKey {
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}-${month}-${day}`;
-}
 
 const STATUS_ORDER: Record<WordStatus, number> = {
   toReview: 0,
@@ -62,9 +56,8 @@ export function buildReviewQueue(
 export function createReviewService(
   wordRepository: WordRepository,
   progressRepository: ProgressRepository,
+  wordOfTheDay: WordOfTheDayService,
 ): ReviewService {
-  const wordOfTheDay = createWordOfTheDayService(wordRepository);
-
   return {
     async recordWordOfTheDay(date) {
       const word = wordOfTheDay.getWordOfTheDay(date);

@@ -16,6 +16,7 @@ export const wordOfTheDayService = createWordOfTheDayService(wordRepository);
 export const reviewService = createReviewService(
   wordRepository,
   progressRepository,
+  wordOfTheDayService,
 );
 
 export const streakService = createStreakService(progressRepository);

@@ -3,7 +3,7 @@
 
 import type { DayKey, ProgressRepository } from "@/data/progress.repository";
 
-import { toDayKey } from "./review.service";
+import { toDayKey } from "./day";
 
 export type Streak = {
   days: number;
