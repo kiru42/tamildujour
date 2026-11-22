@@ -10,6 +10,9 @@ export default defineConfig({
     // Par défaut : node (données, services). Les tests de composants
     // passent en jsdom via `// @vitest-environment jsdom`.
     environment: "node",
+    // Fuseau fixe : les tests de dates (changement d'heure compris) donnent
+    // le même résultat sur toutes les machines.
+    env: { TZ: "Europe/Paris" },
     include: ["src/**/*.test.{ts,tsx}"],
   },
 });

@@ -1,10 +1,10 @@
 // Point de composition : seul fichier de la couche service autorisé à
 // instancier les vrais repositories. La présentation importe d'ici.
 
-import { createInMemoryExampleRepository } from "@/data/example.repository";
+import { createJsonWordRepository } from "@/data/words.repository";
 
-import { createExampleService } from "./example.service";
+import { createWordOfTheDayService } from "./word-of-the-day.service";
 
-export const exampleService = createExampleService(
-  createInMemoryExampleRepository({ label: "" }),
+export const wordOfTheDayService = createWordOfTheDayService(
+  createJsonWordRepository(),
 );
