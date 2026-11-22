@@ -136,6 +136,12 @@ describe("buildReviewQueue", () => {
     expect(queue[0]).toBe("h");
   });
 
+  it("est vide s'il n'y a aucun mot dans le fichier des mots", () => {
+    const progress = progressOf({ words: [seen("a", "toReview"), seen("b", "new")] });
+
+    expect(buildReviewQueue([], progress)).toEqual([]);
+  });
+
   it("ignore un mot vu qui n'existe plus dans le fichier des mots", () => {
     const progress = progressOf({
       words: [seen("disparu", "toReview"), seen("a", "new")],
@@ -239,5 +245,35 @@ describe("createReviewService", () => {
     await service.answer("b", "known", new Date(2026, 10, 22));
 
     expect(fake.stored().words).toEqual([seen("a", "new")]);
+  });
+
+  describe("sans aucun mot dans le fichier des mots", () => {
+    const emptyWords: WordRepository = { getAll: () => [] };
+    const emptyWordOfTheDay = createWordOfTheDayService(emptyWords);
+
+    it("n'enregistre rien et ne lève pas d'erreur pour le mot du jour", async () => {
+      const fake = fakeProgressRepository({ words: [seen("a", "new")] });
+      const service = createReviewService(
+        emptyWords,
+        fake.repository,
+        emptyWordOfTheDay,
+      );
+
+      await expect(
+        service.recordWordOfTheDay(new Date(2026, 10, 22)),
+      ).resolves.toBeUndefined();
+      expect(fake.stored().words).toEqual([seen("a", "new")]);
+    });
+
+    it("donne une file de révision vide", async () => {
+      const fake = fakeProgressRepository({ words: [seen("a", "toReview")] });
+      const service = createReviewService(
+        emptyWords,
+        fake.repository,
+        emptyWordOfTheDay,
+      );
+
+      expect(await service.getReviewCards()).toEqual([]);
+    });
   });
 });

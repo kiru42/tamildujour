@@ -60,6 +60,8 @@ export function createReviewService(
 ): ReviewService {
   return {
     async recordWordOfTheDay(date) {
+      // Sans aucun mot, il n'y a pas de mot du jour à enregistrer.
+      if (wordRepository.getAll().length === 0) return;
       const word = wordOfTheDay.getWordOfTheDay(date);
       await progressRepository.update((progress) =>
         progress.words.some((entry) => entry.wordId === word.id)
