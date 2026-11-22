@@ -3,6 +3,7 @@
 // Séance de révision : une carte à la fois, face tamoule puis verso
 // (prononciation, traduction). Les cartes et leur ordre viennent du
 // service ; ce composant ne fait que les montrer et transmettre les réponses.
+// C'est le service qui décide que la séance du jour est faite.
 
 import { useState } from "react";
 
@@ -20,10 +21,9 @@ import type { ReviewAnswer, Word } from "@/services/review.service";
 type ReviewSessionProps = {
   cards: Word[];
   onAnswer: (wordId: string, answer: ReviewAnswer) => void;
-  onFinish?: () => void;
 };
 
-export function ReviewSession({ cards, onAnswer, onFinish }: ReviewSessionProps) {
+export function ReviewSession({ cards, onAnswer }: ReviewSessionProps) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
 
@@ -46,7 +46,6 @@ export function ReviewSession({ cards, onAnswer, onFinish }: ReviewSessionProps)
     onAnswer(card.id, value);
     setFlipped(false);
     setIndex(index + 1);
-    if (index + 1 === cards.length) onFinish?.();
   }
 
   return (

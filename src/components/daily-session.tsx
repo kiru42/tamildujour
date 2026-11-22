@@ -1,12 +1,14 @@
 "use client";
 
 // Séance du jour : la série en haut, le mot du jour, puis la révision des
-// mots déjà vus. Finir la révision termine la séance du jour.
+// mots déjà vus. Le service décide quand la séance du jour est faite et
+// renvoie alors la série à jour.
 
 import { useEffect, useState } from "react";
 
-import { reviewService, streakService } from "@/services/container";
-import type { Word } from "@/services/review.service";
+import { dailySessionService, streakService } from "@/services/container";
+import type { SessionResult } from "@/services/daily-session.service";
+import type { ReviewAnswer, Word } from "@/services/review.service";
 import type { Streak } from "@/services/streak.service";
 
 import { ReviewSession } from "./review-session";
@@ -29,12 +31,18 @@ export function DailySession() {
     };
   }, []);
 
-  async function startReview() {
-    setStep({ kind: "review", cards: await reviewService.getReviewCards() });
+  function showStreak({ streak: updated }: SessionResult) {
+    if (updated !== null) setStreak(updated);
   }
 
-  async function finishSession() {
-    setStreak(await streakService.completeSession(new Date()));
+  async function startReview() {
+    const start = await dailySessionService.startReview(new Date());
+    setStep({ kind: "review", cards: start.cards });
+    showStreak(start);
+  }
+
+  async function answer(wordId: string, value: ReviewAnswer) {
+    showStreak(await dailySessionService.answer(wordId, value, new Date()));
   }
 
   return (
@@ -44,10 +52,7 @@ export function DailySession() {
         {step.kind === "review" ? (
           <ReviewSession
             cards={step.cards}
-            onAnswer={(wordId, answer) =>
-              void reviewService.answer(wordId, answer, new Date())
-            }
-            onFinish={() => void finishSession()}
+            onAnswer={(wordId, value) => void answer(wordId, value)}
           />
         ) : (
           <TodayWord onReview={() => void startReview()} />

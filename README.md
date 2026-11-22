@@ -23,12 +23,13 @@ Autres commandes :
 
 ```bash
 pnpm test     # tests Vitest (données, logique métier, interface)
+pnpm test:e2e # parcours complet hors ligne sur le build de production (Playwright)
 pnpm lint     # ESLint
 pnpm build    # build de production
 pnpm start    # sert le build de production
 ```
 
-Le service worker (mode hors ligne) n'est actif qu'en production : pour l'essayer en local, lancer `pnpm build` puis `pnpm start`.
+Le service worker (mode hors ligne) n'est actif qu'en production : pour l'essayer en local, lancer `pnpm build` puis `pnpm start`. `pnpm test:e2e` le vérifie automatiquement ; la première fois, installer le navigateur avec `pnpm test:e2e:install`.
 
 ## Ajouter des mots
 

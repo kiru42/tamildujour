@@ -63,17 +63,19 @@ describe("<ReviewSession />", () => {
     expect(onAnswer).toHaveBeenLastCalledWith("naai", "known");
   });
 
-  it("affiche « Fini pour aujourd'hui » après la dernière carte et prévient la fin", () => {
-    const onFinish = vi.fn();
-    render(
-      <ReviewSession cards={[poonai]} onAnswer={() => {}} onFinish={onFinish} />,
-    );
+  it("affiche « Fini pour aujourd'hui » après la dernière carte", () => {
+    render(<ReviewSession cards={[poonai]} onAnswer={() => {}} />);
 
     click("Retourner la carte");
     click("Je sais");
 
     expect(screen.getByText("Fini pour aujourd'hui")).toBeDefined();
-    expect(onFinish).toHaveBeenCalledOnce();
+  });
+
+  it("affiche « Fini pour aujourd'hui » s'il n'y a aucune carte", () => {
+    render(<ReviewSession cards={[]} onAnswer={() => {}} />);
+
+    expect(screen.getByText("Fini pour aujourd'hui")).toBeDefined();
   });
 
   it("indique la position de la carte dans la séance", () => {

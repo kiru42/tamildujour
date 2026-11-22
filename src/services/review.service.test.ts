@@ -11,9 +11,11 @@ import {
   buildReviewQueue,
   createReviewService,
   REVIEW_SESSION_SIZE,
-  toDayKey,
 } from "./review.service";
-import { createWordOfTheDayService } from "./word-of-the-day.service";
+import {
+  createWordOfTheDayService,
+  type WordOfTheDayService,
+} from "./word-of-the-day.service";
 
 function makeWord(id: string): Word {
   return {
@@ -53,13 +55,6 @@ function seen(
 const words = ["a", "b", "c", "d", "e", "f", "g", "h"].map(makeWord);
 const wordRepository: WordRepository = { getAll: () => words };
 const wordOfTheDay = createWordOfTheDayService(wordRepository);
-
-describe("toDayKey", () => {
-  it("donne le jour local au format AAAA-MM-JJ", () => {
-    expect(toDayKey(new Date(2026, 10, 22, 0, 5))).toBe("2026-11-22");
-    expect(toDayKey(new Date(2026, 0, 3, 23, 59))).toBe("2026-01-03");
-  });
-});
 
 describe("buildReviewQueue", () => {
   it("ne contient que les mots déjà vus", () => {
@@ -141,6 +136,12 @@ describe("buildReviewQueue", () => {
     expect(queue[0]).toBe("h");
   });
 
+  it("est vide s'il n'y a aucun mot dans le fichier des mots", () => {
+    const progress = progressOf({ words: [seen("a", "toReview"), seen("b", "new")] });
+
+    expect(buildReviewQueue([], progress)).toEqual([]);
+  });
+
   it("ignore un mot vu qui n'existe plus dans le fichier des mots", () => {
     const progress = progressOf({
       words: [seen("disparu", "toReview"), seen("a", "new")],
@@ -153,9 +154,19 @@ describe("buildReviewQueue", () => {
 });
 
 describe("createReviewService", () => {
+  it("enregistre le mot donné par le service du mot du jour reçu", async () => {
+    const fake = fakeProgressRepository();
+    const fixed: WordOfTheDayService = { getWordOfTheDay: () => words[6] };
+    const service = createReviewService(wordRepository, fake.repository, fixed);
+
+    await service.recordWordOfTheDay(new Date(2026, 10, 22, 9));
+
+    expect(fake.stored().words).toEqual([seen("g", "new", null, "2026-11-22")]);
+  });
+
   it("enregistre le mot du jour comme vu", async () => {
     const fake = fakeProgressRepository();
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
     const day = new Date(2026, 10, 22, 9);
 
     await service.recordWordOfTheDay(day);
@@ -167,7 +178,7 @@ describe("createReviewService", () => {
 
   it("n'enregistre qu'une fois un mot du jour vu plusieurs fois", async () => {
     const fake = fakeProgressRepository();
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
 
     await service.recordWordOfTheDay(new Date(2026, 10, 22, 9));
     await service.recordWordOfTheDay(new Date(2026, 10, 22, 18));
@@ -181,7 +192,7 @@ describe("createReviewService", () => {
     const fake = fakeProgressRepository({
       words: [seen(id, "toReview", "2026-11-01")],
     });
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
 
     await service.recordWordOfTheDay(day);
 
@@ -190,7 +201,7 @@ describe("createReviewService", () => {
 
   it("ne propose en révision que les mots montrés comme mot du jour", async () => {
     const fake = fakeProgressRepository();
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
     const days = [new Date(2026, 10, 20), new Date(2026, 10, 22)];
 
     for (const day of days) await service.recordWordOfTheDay(day);
@@ -203,7 +214,7 @@ describe("createReviewService", () => {
 
   it("enregistre la réponse « à revoir » et la date de révision", async () => {
     const fake = fakeProgressRepository({ words: [seen("a", "new")] });
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
 
     await service.answer("a", "toReview", new Date(2026, 10, 22, 9));
 
@@ -216,7 +227,7 @@ describe("createReviewService", () => {
     const fake = fakeProgressRepository({
       words: [seen("a", "new"), seen("b", "new"), seen("c", "new")],
     });
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
     const day = new Date(2026, 10, 22);
 
     await service.answer("a", "known", day);
@@ -229,10 +240,40 @@ describe("createReviewService", () => {
 
   it("ignore une réponse pour un mot jamais vu", async () => {
     const fake = fakeProgressRepository({ words: [seen("a", "new")] });
-    const service = createReviewService(wordRepository, fake.repository);
+    const service = createReviewService(wordRepository, fake.repository, wordOfTheDay);
 
     await service.answer("b", "known", new Date(2026, 10, 22));
 
     expect(fake.stored().words).toEqual([seen("a", "new")]);
+  });
+
+  describe("sans aucun mot dans le fichier des mots", () => {
+    const emptyWords: WordRepository = { getAll: () => [] };
+    const emptyWordOfTheDay = createWordOfTheDayService(emptyWords);
+
+    it("n'enregistre rien et ne lève pas d'erreur pour le mot du jour", async () => {
+      const fake = fakeProgressRepository({ words: [seen("a", "new")] });
+      const service = createReviewService(
+        emptyWords,
+        fake.repository,
+        emptyWordOfTheDay,
+      );
+
+      await expect(
+        service.recordWordOfTheDay(new Date(2026, 10, 22)),
+      ).resolves.toBeUndefined();
+      expect(fake.stored().words).toEqual([seen("a", "new")]);
+    });
+
+    it("donne une file de révision vide", async () => {
+      const fake = fakeProgressRepository({ words: [seen("a", "toReview")] });
+      const service = createReviewService(
+        emptyWords,
+        fake.repository,
+        emptyWordOfTheDay,
+      );
+
+      expect(await service.getReviewCards()).toEqual([]);
+    });
   });
 });
