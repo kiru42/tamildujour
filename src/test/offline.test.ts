@@ -231,6 +231,26 @@ describe("service worker hors ligne", () => {
     expect(sw.networkCalls).toEqual([]);
   });
 
+  it("ne met en cache aucune autre requête du site (données, API)", async () => {
+    const sw = await installed();
+    sw.site["/api/progression"] = "données";
+
+    expect(await sw.request("/api/progression")).toBeUndefined();
+    const cached = [...sw.stores.values()].flatMap((store) => [...store.keys()]);
+    expect(cached).not.toContain(`${ORIGIN}/api/progression`);
+  });
+
+  it("n'enregistre comme page de l'app que la page d'accueil", async () => {
+    const sw = await installed();
+    sw.site["/autre"] = "autre page";
+
+    await (await sw.request("/autre", { mode: "navigate" }))!.text();
+    sw.goOffline();
+    const page = await sw.request("/", { mode: "navigate" });
+
+    expect(await page!.text()).toBe(PAGE);
+  });
+
   it("laisse passer les requêtes autres que GET", async () => {
     const sw = await installed();
 

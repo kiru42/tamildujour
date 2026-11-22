@@ -1,7 +1,8 @@
 // Service worker de Tamil du jour : rend l'app utilisable hors ligne une fois
 // chargée. Toute la progression vit sur l'appareil ; il suffit donc de garder
-// la page et ses ressources. Seules les requêtes GET du même site sont
-// traitées : aucune requête vers un service tiers ne passe par ici.
+// la page et ses ressources. Seules les requêtes GET du même site vers la
+// page d'accueil, les fichiers de APP_SHELL et /_next/static sont traitées :
+// aucune requête vers un service tiers ni aucune donnée ne passe par ici.
 
 const CACHE = "tamildujour-v1";
 
@@ -58,15 +59,17 @@ async function removeOldCaches() {
   await Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name)));
 }
 
-// Page : réseau d'abord (dernière version), cache si hors ligne.
+// Page : réseau d'abord (dernière version), cache si hors ligne. Seule la
+// page d'accueil est enregistrée.
 async function networkFirstPage(request) {
   const cache = await caches.open(CACHE);
   try {
     const response = await fetch(request);
-    if (response.ok) await cache.put("/", response.clone());
+    const isHome = new URL(request.url).pathname === "/";
+    if (isHome && response.ok) await cache.put("/", response.clone());
     return response;
   } catch (error) {
-    const cached = (await cache.match(request)) || (await cache.match("/"));
+    const cached = await cache.match("/");
     if (cached) return cached;
     throw error;
   }
@@ -82,7 +85,7 @@ async function cacheFirst(request) {
   return response;
 }
 
-// Autres fichiers du site : réseau d'abord, cache si hors ligne.
+// Manifeste et icônes : réseau d'abord, cache si hors ligne.
 async function networkFirst(request) {
   const cache = await caches.open(CACHE);
   try {
@@ -115,7 +118,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirstPage(request));
   } else if (url.pathname.startsWith(STATIC_PREFIX)) {
     event.respondWith(cacheFirst(request));
-  } else {
+  } else if (APP_SHELL.includes(url.pathname)) {
     event.respondWith(networkFirst(request));
   }
 });
