@@ -19,9 +19,11 @@ L'intention produit, les contraintes et les critères d'acceptation sont dans `I
 pnpm dev     # serveur de dev (Turbopack)
 pnpm build   # build de production
 pnpm lint    # ESLint (configs next core-web-vitals + typescript)
+pnpm test    # Vitest, une passe (pnpm test src/data pour un dossier)
+pnpm test:watch
 ```
 
-Aucun runner de tests n'est encore configuré.
+Vitest 5 (`vitest.config.mts`) : environnement `node` par défaut, les tests de composants passent en jsdom avec `// @vitest-environment jsdom`. Les alias `@/*` sont résolus par Vite (`resolve.tsconfigPaths`), sans plugin.
 
 ## Branches
 
