@@ -4,9 +4,10 @@
 // pas (fuseau, prérendu mis en cache). Il est donc choisi côté client ; le
 // serveur n'affiche qu'un emplacement.
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
-import { wordOfTheDayService } from "@/services/container";
+import { Button } from "@/components/ui/button";
+import { reviewService, wordOfTheDayService } from "@/services/container";
 
 import { WordOfTheDay } from "./word-of-the-day";
 
@@ -24,8 +25,18 @@ function getServerWord() {
   return null;
 }
 
-export function TodayWord() {
+type TodayWordProps = {
+  onReview: () => void;
+};
+
+export function TodayWord({ onReview }: TodayWordProps) {
   const word = useSyncExternalStore(subscribe, getTodayWord, getServerWord);
+  const wordId = word?.id;
+
+  // Un mot affiché comme mot du jour entre dans la révision.
+  useEffect(() => {
+    if (wordId !== undefined) void reviewService.recordWordOfTheDay(new Date());
+  }, [wordId]);
 
   if (word === null) {
     return (
@@ -35,5 +46,12 @@ export function TodayWord() {
     );
   }
 
-  return <WordOfTheDay word={word} />;
+  return (
+    <div className="flex w-full max-w-md flex-col gap-4">
+      <WordOfTheDay word={word} />
+      <Button size="xl" className="w-full" onClick={onReview}>
+        Réviser
+      </Button>
+    </div>
+  );
 }
