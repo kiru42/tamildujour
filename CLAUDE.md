@@ -21,6 +21,7 @@ pnpm build   # build de production
 pnpm lint    # ESLint (configs next core-web-vitals + typescript)
 pnpm test    # Vitest, une passe (pnpm test src/data pour un dossier)
 pnpm test:watch
+pnpm test:e2e  # Playwright (e2e/), sur le build de production lancé sur le port 3100
 ```
 
 Vitest 5 (`vitest.config.mts`) : environnement `node` par défaut, les tests de composants passent en jsdom avec `// @vitest-environment jsdom`. Les alias `@/*` sont résolus par Vite (`resolve.tsconfigPaths`), sans plugin.
