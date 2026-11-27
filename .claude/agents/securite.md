@@ -1,6 +1,6 @@
 ---
 name: securite
-description: Vérifie la sécurité du repo en lecture seule : secrets, fichiers sensibles, failles évidentes. À utiliser avant une mise en production ou quand je demande un contrôle de sécurité.
+description: "Vérifie la sécurité du repo en lecture seule : secrets, fichiers sensibles, failles évidentes. À utiliser avant une mise en production ou quand je demande un contrôle de sécurité."
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
