@@ -47,6 +47,16 @@ On travaille sur `dev`. `main` sert de branche de production.
 - La logique métier (mot du jour, file de révision, série) est pure et couverte par des tests unitaires.
 - PWA utilisable hors ligne, aucun traceur ni analytics, police avec les glyphes tamouls.
 
+## Architecture
+
+- Trois couches : présentation, service, données. Les règles de chaque couche sont dans `.claude/rules/`.
+- Les décisions d'architecture sont dans `docs/decisions/`. Lis-les avant de proposer un choix d'architecture.
+
+## Façon de travailler
+
+- Messages de commit au format du skill `git-conventional`.
+- Ne commite et ne pousse jamais sans que je le demande.
+
 ## Git
 - On travaille sur dev. Jamais de commit direct sur main.
 - Un seul commit par lot : feat(lot-N): <titre du lot>.
